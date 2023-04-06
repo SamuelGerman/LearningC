@@ -76,15 +76,91 @@ int consultar_valor(No *raiz,int num){
 
 int remover_valor(No **ponteiro_raiz, int *num){
     No *percorre = *ponteiro_raiz;
+    No *pai = NULL;
+    
+    while(percorre != NULL && percorre->valor!= *num){
+        pai = percorre; // pai fica um nó "atras" do nó percorre, que vai ir para uma das subarvores agora    
+        if(*num < percorre->valor){
+            percorre = percorre->esquerda;
+        }else{
+            percorre = percorre->direita;
+        }
+    }
+    *num = percorre->valor;
     if(percorre==NULL)
         return 0; //nao ta na arvore
-    if(percorre->valor == num)
-        return 1; //achou
-    if(num < percorre->valor){//procurar na esquerda
         
+    if (percorre->esquerda == NULL && percorre->direita == NULL) {
+        // Caso 1: o nó a ser removido é uma folha
+        if (pai == NULL) {
+            // Nó a ser removido é a raiz da árvore
+            *ponteiro_raiz = NULL;
+        } else if (percorre == pai->esquerda) {
+            pai->esquerda = NULL;
+        } else {
+            pai->direita = NULL;
+        }
+        free(percorre);
+    } else if (percorre->esquerda == NULL || percorre->direita == NULL) {
+        // Caso 2: o nó a ser removido possui apenas um filho
+        No *filho;
+        if (percorre->esquerda != NULL) {
+            filho = percorre->esquerda;
+        } else {
+            filho = percorre->direita;
+        }
+        if (pai == NULL) {
+            // Nó a ser removido é a raiz da árvore
+            *ponteiro_raiz = filho;
+        } else if (percorre == pai->esquerda) {
+            pai->esquerda = filho;
+        } else {
+            pai->direita = filho;
+        }
+        free(percorre);
+    } else {
+        // Caso 3: o nó a ser removido possui dois filhos
+        No *sucessor = percorre->direita;
+        pai = percorre;
+        while (sucessor->esquerda != NULL) {
+            pai = sucessor;
+            sucessor = sucessor->esquerda;
+        }
+        percorre->valor = sucessor->valor;
+        if (pai->esquerda == sucessor) {
+            pai->esquerda = sucessor->direita;
+        } else {
+            pai->direita = sucessor->direita;
+        }
+        free(sucessor);
     }
     
 }
+
+void imprimir_em_ordem(No *raiz) { // esr - raiz - dir
+    if (raiz != NULL) {
+        imprimir_em_ordem(raiz->esquerda);
+        printf("%d ", raiz->valor);
+        imprimir_em_ordem(raiz->direita);
+    }
+}
+
+void imprimir_arvore_pre_ordem(No *raiz) {
+    if (raiz != NULL) {
+        printf("%d ", raiz->valor);
+        imprimir_arvore_pre_ordem(raiz->esquerda);
+        imprimir_arvore_pre_ordem(raiz->direita);
+    }
+}
+
+void imprimir_arvore_pos_ordem(No *raiz) {
+    if (raiz != NULL) {
+        imprimir_arvore_pos_ordem(raiz->esquerda);
+        imprimir_arvore_pos_ordem(raiz->direita);
+        printf("%d ", raiz->valor);
+    }
+}
+
 //------------------------------------------------------------------- MAIN -------------------------------------------------------------
 int main(){
 
@@ -96,7 +172,15 @@ int main(){
     inserir_no(&arv,5);
     inserir_no(&arv, 19);
     inserir_no(&arv, 16);
-
+    
+    int a,b,c,d;
+    a=16;b=24;c=5;d=19;
+    
+    //remover_valor(&arv,&a);
+    //remover_valor(&arv,&b);
+    //remover_valor(&arv,&c);
+    //remover_valor(&arv,&d);
+    
     printf("%d;\n",consultar_valor(arv,15));
     printf("%d;\n",consultar_valor(arv,11));
     printf("%d;\n",consultar_valor(arv,24));
@@ -105,5 +189,12 @@ int main(){
     printf("%d;\n",consultar_valor(arv,16));
     printf("%d;\n",consultar_valor(arv,123));
     printf("%d;\n",consultar_valor(arv,56));
+    
+    imprimir_em_ordem(arv); // esq - raiz - dir
+    printf("\n");
+    imprimir_arvore_pos_ordem(arv); // esq - dir - raiz
+    printf("\n");
+    imprimir_arvore_pre_ordem(arv); // raiz - esq - dir
+    printf("\n");
     return 0;
 }
